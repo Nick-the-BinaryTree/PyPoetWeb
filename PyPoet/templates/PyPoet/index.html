@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PyPoet</title>
+</head>
+<body>
+<h1>PyPoet</h1>
+{% if error_message %}<p>{{ error_message }}</p>{% endif %}
+<form action="{% url 'PyPoet:submit' %}"} method="post">
+    {% csrf_token %}
+    <div class="prompt">
+        <label for="URL_Box">Put URL of text here:</label>
+        <input type="text" name="URL" id="URL_Box" value="http://www.gutenberg.org/files/1661/1661-h/1661-h.htm">
+    </div>
+    <div class="prompt">
+        <label for="StartIndexBox">Start index (sentence # to start on):</label>
+        <input type="number" name="StartIndex" id="StartIndexBox" value="0">
+    </div>
+    <div class="prompt">
+        <label for="TotalLinesBox">Target # of lines for result poem:</label>
+        <input type="number" name="TotalLines" id="TotalLinesBox" value="6">
+    </div>
+    <div class="prompt">
+        <label for="SentenceLengthBox">Target sentence length for each line of result poem:</label>
+        <input type="number" name="SentenceLength" id="SentenceLengthBox" value="5">
+    </div>
+    <div class="prompt">
+        <label for="SentenceThresholdBox">Threshold for target sentence length (allowed variation):</label>
+        <input type="number" name="SentenceThreshold" id="SentenceThresholdBox" value="10">
+    </div>
+    <input type="submit">
+</form>
+<h4>Note: This can be very slow. Looking into multithreading for the future. </h4>
+{% if output %}
+<h2>Result</h2>
+<p>{{ output }}</p>
+{% endif %}
+
+</body>
+</html>
