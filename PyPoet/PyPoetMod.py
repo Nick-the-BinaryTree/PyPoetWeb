@@ -48,9 +48,16 @@ def senChecks(sen, rhymeWith, foundCount, SENTENCE_LENGTH, SENTENCE_THRESHOLD, R
     else:
         return fitsLength and isRhyme(lastWord, rhymeWith, rhymes)
 
+def randIndex(numSentences):
+    return randint(0, numSentences)
+
 def buildPoem(sentences, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_TARGET):
-    if START_INDEX < 0 or START_INDEX > len(sentences):
-        START_INDEX = randint(0, len(sentences))
+    numSentences = len(sentences)
+    if START_INDEX < 0 or START_INDEX > numSentences:
+        START_INDEX = randIndex(numSentences)
+    else:
+        START_INDEX += (randIndex(numSentences-START_INDEX))
+
     foundCount = 0
     lastWord = ""
     final = ""
@@ -66,38 +73,60 @@ def buildPoem(sentences, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_TAR
             foundCount += 1
             lastWord = getLastWord(sen)
             print("Last Word: " + lastWord)
-            final += clean("".join(sen)) + "\n"
+            final += clean("".join(sen)) + "<br>"
             if isBase(foundCount):
                 final+="\n"
 
     if foundCount < TOTAL_LINES:
-        final += "\n Could not complete."
+        final += "Could not complete."
 
     return final
 
-def getPoem(URL, START_INDEX = 154, TOTAL_LINES = 2, SENTENCE_LENGTH = 5, SENTENCE_THRESHOLD = 15):
+def validateInput(URL, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD):
+
+    START_INDEX = int(START_INDEX)
+    TOTAL_LINES = int(TOTAL_LINES)
+    SENTENCE_LENGTH = int(SENTENCE_LENGTH)
+    SENTENCE_THRESHOLD = int(SENTENCE_THRESHOLD)
+
+    if TOTAL_LINES < 0:
+        TOTAL_LINES = 0
+    if SENTENCE_LENGTH < 0:
+        SENTENCE_LENGTH = 0
+    if SENTENCE_THRESHOLD < 0:
+        SENTENCE_THRESHOLD = 0
+
+    print()
+    print("File location: " + URL)
+    print("Start index: " + str(START_INDEX))
+    print("Target lines: " + str(TOTAL_LINES))
+    print("Target sentence length: " + str(SENTENCE_LENGTH))
+    print("Target sentence length threshold: " + str(SENTENCE_THRESHOLD))
+    print()
+
+    return {"si" : START_INDEX, "tl" : TOTAL_LINES, "sl" : SENTENCE_LENGTH, "st" : SENTENCE_THRESHOLD}
+
+def getPoem(URL, START_INDEX = 154, TOTAL_LINES = 4, SENTENCE_LENGTH = 5, SENTENCE_THRESHOLD = 15):
         try:
-
-            START_INDEX = int(START_INDEX)
-            TOTAL_LINES = int(TOTAL_LINES)
-            SENTENCE_LENGTH = int(SENTENCE_LENGTH)
-            SENTENCE_THRESHOLD = int(SENTENCE_THRESHOLD)
-
-            if START_INDEX < 0:
-                START_INDEX = 0
-            if TOTAL_LINES < 0:
-                TOTAL_LINES = 0
-            if SENTENCE_LENGTH < 0:
-                SENTENCE_LENGTH = 0
-            if SENTENCE_THRESHOLD < 0:
-                SENTENCE_THRESHOLD = 0
-
-            print("File location: " + URL)
-            print("Start index: " + str(START_INDEX))
-            print("Total poem lines: " + str(TOTAL_LINES))
-            print("Target sentence length: " + str(SENTENCE_LENGTH))
-            print("Target sentence length threshold: " + str(SENTENCE_THRESHOLD))
-            print()
+            valid = validateInput(URL, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD)
+            START_INDEX = valid["si"]
+            TOTAL_LINES = valid["tl"]
+            SENTENCE_LENGTH = valid["sl"]
+            SENTENCE_THRESHOLD = valid["st"]
             return("\n\n" + buildPoem(getSentences(URL), START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD))
-        except:
-            return("File location error.")
+        except TypeError as e:
+            print(e)
+            return("Input error (maybe try another URL, and check the settings).")
+
+
+def getTwoLines(DONE, URL, START_INDEX=-1, TOTAL_LINES=2, SENTENCE_LENGTH=5, SENTENCE_THRESHOLD=15):
+    try:
+        valid = validateInput(URL, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD)
+        START_INDEX = valid["si"]
+        TOTAL_LINES = valid["tl"]
+        SENTENCE_LENGTH = valid["sl"]
+        SENTENCE_THRESHOLD = valid["st"]
+        return (DONE + "<br><br>" + buildPoem(getSentences(URL), START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD))
+    except TypeError as e:
+        print(e)
+        return ("Input error (maybe try another URL, and check the settings).")

@@ -9,15 +9,28 @@ class IndexView(generic.TemplateView):
 
 def submit(request):
     if not request.method == 'GET':
-        poem = ""
+        cl = 0
+        p = ""
         url = request.POST["URL"]
         si = request.POST["StartIndex"]
         tl = request.POST["TotalLines"]
         sl = request.POST["SentenceLength"]
         st = request.POST["SentenceThreshold"]
-        if url and si and tl and sl and st:
-            poem = PyPoetMod.getPoem(url, si, tl, sl, st)
-        else:
-            poem = "Were all the boxes filled?"
-        return render(request, "PyPoet/index.html", {"output": poem})
+        if "CurrentLine" in request.POST and request.POST["CurrentLine"] != "":
+            cl = request.POST["CurrentLine"]
+            cl = int(cl)
+            p = request.POST["Progress"]
+        lines = poemAdd(url, si, sl, st, cl, p)
+        return render(request, "PyPoet/index.html", {"output": lines["output"], "cl" : lines["cl"], "tl" : tl})
     return HttpResponse("Something went terribly wrong.")
+
+def poemAdd(url, si, sl, st, cl, p):
+    output = "" # -1 random start index, 2 for 2 lines
+    failLimit = 10
+
+    for i in range(failLimit+1):
+        output = PyPoetMod.getTwoLines(p, url, si, 2, sl, st)
+        if not "Could not complete" in output:
+            break
+
+    return {"output" : output, "cl": cl + 3}

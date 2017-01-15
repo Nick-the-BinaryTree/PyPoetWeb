@@ -7,11 +7,11 @@
 <body>
 <h1>PyPoet</h1>
 {% if error_message %}<p>{{ error_message }}</p>{% endif %}
-<form action="{% url 'PyPoet:submit' %}"} method="post">
+<form action="{% url 'PyPoet:submit' %}"} method="post" id = "settingsForm">
     {% csrf_token %}
     <div class="prompt">
         <label for="URL_Box">Put URL of text here:</label>
-        <input type="text" name="URL" id="URL_Box" value="http://www.gutenberg.org/files/1661/1661-h/1661-h.htm">
+        <input type="text" name="URL" id="URL_Box" value="http://www.textfiles.com/etext/FICTION/80day10.txt">
     </div>
     <div class="prompt">
         <label for="StartIndexBox">Start index (sentence # to start on):</label>
@@ -29,13 +29,45 @@
         <label for="SentenceThresholdBox">Threshold for target sentence length (allowed variation):</label>
         <input type="number" name="SentenceThreshold" id="SentenceThresholdBox" value="10">
     </div>
-    <input type="submit">
+
+    {% if output %}
+    <input type="hidden" name="CurrentLine" id = "CurrentLineBox" value = "{{ cl }}"></input>
+    <input type="hidden" name="Progress" id = "ProgressBox" value = "{{ output }}"></input>
+    {% endif %}
+
+    <input type="submit" id = "submit_button">
 </form>
-<h4>Note: This can be very slow. Looking into multithreading for the future. </h4>
+
 {% if output %}
 <h2>Result</h2>
-<p>{{ output }}</p>
+<p id = "CurrentLineDisplay"><i>Working on line {{ cl }}...</i></p>
+<p id = "ProgressDisplay">{% autoescape off %} {{ output }} {% endautoescape %}</p>
+<script>
+window.onload = function(){
+    settings = document.getElementById("settingsForm");
+    sub_button = document.getElementById("submit_button");
+
+    settings.onsubmit = function(){
+        if( {{ cl }} > 0 ){
+            document.getElementById("CurrentLineBox").value = "";
+            document.getElementById("ProgressBox").value = "";
+            document.getElementById("CurrentLineDisplay").innerHTML = "";
+            document.getElementById("ProgressDisplay").innerHTML = "";
+        }
+    }
+
+    if( {{ cl }} <= {{ tl }} ){ //Mixed template language and JS ftw
+        settings.submit();
+    }
+    else{
+        document.getElementById("CurrentLineDisplay").innerHTML = "Done!";
+    }
+}
+</script>
 {% endif %}
+
+<br>
+<h4>Note: This can be very slow. Looking into multithreading for the future. </h4>
 
 </body>
 </html>
