@@ -2,11 +2,10 @@ from django.views import generic
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import celery.task.control
+from celery.result import ResultSet
 from . import tasks
 
-results = []
-lines = ""
-progress = 0
+results = ResultSet([])
 
 # Create your views here.
 class IndexView(generic.TemplateView):
@@ -60,8 +59,6 @@ class IndexView(generic.TemplateView):
 
 def submit(request):
     stopAll()
-    global progress
-    global lines
     global results
     if not request.method == 'GET':
         url = request.POST["URL"]
@@ -71,26 +68,12 @@ def submit(request):
         st = request.POST["SentenceThreshold"]
         tl = int(tl)
         for i in range(1, tl, 2):
-            results.append(tasks.poemAdd.delay(url, si, sl, st, True))
-
-        done = 0
-        for x in results:
-            if x.successful():
-                done += 1
-                progress = done//tl*100
-                print(progress)
-                lines += x.get()
+            results.add(tasks.poemAdd.delay(url, si, sl, st, True))
 
         if tl % 2 == 1:
-            lines += tasks.poemAdd(url, si, sl, st, False)
-        return render(request, "PyPoet/index.html",
-                      {"output": lines,
-                       "tl" : tl,
-                       "url" : url,
-                       "si" : si,
-                       "sl" : sl,
-                       "st" : st,
-                       })
+            results.add(tasks.poemAdd.delay(url, si, sl, st, False))
+
+        return JsonResponse({'Down to':'business'})
     return HttpResponse("Something went terribly wrong.")
 
 def leaving(request):
@@ -98,18 +81,16 @@ def leaving(request):
     return JsonResponse({'Good':'bye'})
 
 def update(request):
-    global progress
-    print(progress)
-    return JsonResponse({'progress':progress})
+    global results
+    done = results.completed_count()
+    total = len(results)
+    progStr = "Progress: " + str(done) + " / " + str(total) + " operations"
+    if results.ready() and total != 0:
+        return JsonResponse({'progress':progStr, 'output':results.get()})
+    return JsonResponse({'progress':progStr})
 
 def stopAll():
-    global lines
-    lines = ""
-    global progress
-    progress = 0
-    for x in results:
-        print("Stopping task: " + str(x))
-        x.revoke(terminate=True)
-    celery.task.control.discard_all()
     global results
-    results = []
+    results.revoke(terminate=True)
+    results.clear()
+    # celery.task.control.discard_all()
