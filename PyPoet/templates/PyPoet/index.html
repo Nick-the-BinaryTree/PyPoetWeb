@@ -11,23 +11,28 @@
     {% csrf_token %}
     <div class="prompt">
         <label for="URL_Box">Put URL of text here:</label>
-        <input type="text" name="URL" id="URL_Box" value="http://www.textfiles.com/etext/FICTION/80day10.txt">
+        <input type="text" name="URL" id="URL_Box" {% if output %} value = {{ url }}
+               {% else %} value="http://www.textfiles.com/etext/FICTION/80day10.txt" {% endif %}>
     </div>
     <div class="prompt">
         <label for="StartIndexBox">Start index (sentence # to start on):</label>
-        <input type="number" name="StartIndex" id="StartIndexBox" value="0">
+        <input type="number" name="StartIndex" id="StartIndexBox" {% if output %} value = {{ si }}
+               {% else %} value="0" {% endif %}>
     </div>
     <div class="prompt">
         <label for="TotalLinesBox">Target # of lines for result poem:</label>
-        <input type="number" name="TotalLines" id="TotalLinesBox" value="6">
+        <input type="number" name="TotalLines" id="TotalLinesBox" {% if output %} value={{ tl }}
+               {% else %} value="6" {% endif %}>
     </div>
     <div class="prompt">
         <label for="SentenceLengthBox">Target sentence length for each line of result poem:</label>
-        <input type="number" name="SentenceLength" id="SentenceLengthBox" value="5">
+        <input type="number" name="SentenceLength" id="SentenceLengthBox" {% if output %} value = {{ sl }}
+               {% else %} value="5" {% endif %}>
     </div>
     <div class="prompt">
         <label for="SentenceThresholdBox">Threshold for target sentence length (allowed variation):</label>
-        <input type="number" name="SentenceThreshold" id="SentenceThresholdBox" value="10">
+        <input type="number" name="SentenceThreshold" id="SentenceThresholdBox" {% if output %} value = {{ st }}
+               {% else %} value="10" {% endif %}>
     </div>
 
     {% if output %}
@@ -38,36 +43,52 @@
     <input type="submit" id = "submit_button">
 </form>
 
+<p id = "CurrentLineDisplay">Progress: 0%</p>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script>
+    $(window).on('beforeunload', function(){
+        $.ajax({url:"{% url 'PyPoet:leaving' %}", async:false});
+        console.log("Leaving");
+    });
+    $(document).ready(function(){
+        setInterval(function(){
+            console.log("Running get");
+            $.get("{% url 'PyPoet:update' %}", function(data){
+            console.log(data);
+                $("#CurrentLineDisplay").text("Progress: " + data["progress"] + "%");
+            });
+        },
+        2000);
+    });
+</script>
+
 {% if output %}
 <h2>Result</h2>
-<p id = "CurrentLineDisplay"><i>Working on line {{ cl }}...</i></p>
 <p id = "ProgressDisplay">{% autoescape off %} {{ output }} {% endautoescape %}</p>
-<script>
-window.onload = function(){
-    settings = document.getElementById("settingsForm");
-    sub_button = document.getElementById("submit_button");
 
-    settings.onsubmit = function(){
-        if( {{ cl }} > 0 ){
-            document.getElementById("CurrentLineBox").value = "";
-            document.getElementById("ProgressBox").value = "";
-            document.getElementById("CurrentLineDisplay").innerHTML = "";
-            document.getElementById("ProgressDisplay").innerHTML = "";
-        }
-    }
+<!--<script>-->
+<!--window.onload = function(){-->
+    <!--settings = document.getElementById("settingsForm");-->
+    <!--sub_button = document.getElementById("submit_button");-->
 
-    if( {{ cl }} <= {{ tl }} ){ //Mixed template language and JS ftw
-        settings.submit();
-    }
-    else{
-        document.getElementById("CurrentLineDisplay").innerHTML = "Done!";
-    }
-}
+    <!--settings.onsubmit = function(){-->
+        <!--if( {{ cl }} > 0 ){-->
+            <!--document.getElementById("CurrentLineBox").value = "";-->
+            <!--document.getElementById("ProgressBox").value = "";-->
+            <!--document.getElementById("CurrentLineDisplay").innerHTML = "";-->
+            <!--document.getElementById("ProgressDisplay").innerHTML = "";-->
+        <!--}-->
+    <!--}-->
+
+    <!--if( {{ cl }} < {{ tl }} ){ //Mixed template language and JS ftw-->
+        <!--settings.submit();-->
+    <!--}-->
+    <!--else{-->
+        <!--document.getElementById("CurrentLineDisplay").innerHTML = "Done!";-->
+    <!--}-->
+<!--}-->
 </script>
 {% endif %}
-
-<br>
-<h4>Note: This can be very slow. Looking into multithreading for the future. </h4>
-
 </body>
 </html>

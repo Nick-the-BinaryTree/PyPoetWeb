@@ -73,12 +73,10 @@ def buildPoem(sentences, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_TAR
             foundCount += 1
             lastWord = getLastWord(sen)
             print("Last Word: " + lastWord)
-            final += clean("".join(sen)) + "<br>"
-            if isBase(foundCount):
-                final+="\n"
+            final += "<br>" + clean("".join(sen))
 
     if foundCount < TOTAL_LINES:
-        final += "Could not complete."
+        final += "<br>Could not complete."
 
     return final
 
@@ -120,6 +118,19 @@ def getPoem(URL, START_INDEX = 154, TOTAL_LINES = 4, SENTENCE_LENGTH = 5, SENTEN
 
 
 def getTwoLines(DONE, URL, START_INDEX=-1, TOTAL_LINES=2, SENTENCE_LENGTH=5, SENTENCE_THRESHOLD=15):
+    # return DONE+"one<br>two<br><br>"
+    try:
+        valid = validateInput(URL, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD)
+        START_INDEX = valid["si"]
+        TOTAL_LINES = valid["tl"]
+        SENTENCE_LENGTH = valid["sl"]
+        SENTENCE_THRESHOLD = valid["st"]
+        return (DONE + "<br>" + buildPoem(getSentences(URL), START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD))
+    except TypeError as e:
+        print(e)
+        return ("Input error (maybe try another URL, and check the settings).")
+
+def getOneLine(DONE, URL, START_INDEX=-1, TOTAL_LINES=1, SENTENCE_LENGTH=5, SENTENCE_THRESHOLD=15):
     try:
         valid = validateInput(URL, START_INDEX, TOTAL_LINES, SENTENCE_LENGTH, SENTENCE_THRESHOLD)
         START_INDEX = valid["si"]
