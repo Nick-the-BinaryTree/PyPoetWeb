@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>PyPoet</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'PyPoet/css/bootstrap.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'PyPoet/css/bootstrap-theme.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'PyPoet/css/custom.css' %}">
 </head>
 <body>
 <h1>PyPoet</h1>
@@ -37,7 +41,8 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script src="http://malsup.github.com/jquery.form.js"></script>
-<script>
+<script src="{% static 'PyPoet/js/bootstrap.js' %}"></script>
+<script>'
     $(window).on('beforeunload', function(){
         $.ajax({url:"{% url 'PyPoet:leaving' %}", async:false});
         console.log("Leaving");
