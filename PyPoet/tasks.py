@@ -7,7 +7,7 @@ def poemAdd(url, si, sl, st, twoLines):
     output = "" # -1 random start index, 2 for 2 lines
 
     if twoLines:
-        FAIL_LIMIT = 0
+        FAIL_LIMIT = 5
 
         for i in range(FAIL_LIMIT+1):
             output = PyPoetMod.getTwoLines("", url, si, 2, sl, st)

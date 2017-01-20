@@ -1,0 +1,28 @@
+body{
+    background: #FFFFF0;
+    background-image: url("../img/crisp_paper_ruffles.png");
+    background-repeat: repeat;
+}
+
+input[type="submit"]{
+    margin-bottom: 1.5em;
+    transition: background-color 1s;
+    border: 1px solid #000;
+
+}
+
+input[type="submit"]:hover{
+    background-color: #337ab7;
+    border: 1px solid #fff;
+    transition: background-color 1s;
+    transition-timing-function: ease;
+}
+
+.progress-bar-striped{
+    opacity: .7;
+}
+
+#ProgressDisplay{
+    font-family: 'Cormorant', serif;
+    font-size: 2em;
+}

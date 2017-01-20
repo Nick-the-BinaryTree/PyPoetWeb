@@ -84,7 +84,11 @@ def update(request):
     global results
     done = results.completed_count()
     total = len(results)
-    progStr = "Progress: " + str(done) + " / " + str(total) + " operations"
+    # progStr = "Progress: " + str(done) + " / " + str(total) + " operations"
+    if total == 0:
+        progStr = 0
+    else:
+        progStr = done/total*100
     if results.ready() and total != 0:
         return JsonResponse({'progress':progStr, 'output':results.get()})
     return JsonResponse({'progress':progStr})
@@ -93,4 +97,4 @@ def stopAll():
     global results
     results.revoke(terminate=True)
     results.clear()
-    # celery.task.control.discard_all()
+    celery.task.control.discard_all()
